@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFF9F0;--yellow:#FFD93D;--orange:#FF6B35;--pink:#FF6B9D;--purple:#C77DFF;--blue:#4CC9F0;--green:#06D6A0;--red:#EF476F;--dark:#2D2D2D}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;overflow-x:hidden;background-image:radial-gradient(circle at 15% 15%,#FFE5CC 0%,transparent 45%),radial-gradient(circle at 85% 85%,#E0F7FF 0%,transparent 45%)}
+h1,h2,.fredoka{font-family:'Fredoka One',cursive;letter-spacing:.5px}
+.header{text-align:center;padding:20px 20px 12px}
+.header h1{font-size:2.8rem;background:linear-gradient(135deg,var(--orange),var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(2px 3px 0 rgba(0,0,0,.08))}
+.header p{font-size:1rem;color:#aaa;font-weight:700;margin-top:2px}
+.screen{display:none}.screen.active{display:block}
+
+/* PICKER */
+.picker{max-width:860px;margin:0 auto;padding:10px 20px 30px}
+.picker-title{text-align:center;font-size:1.5rem;color:var(--dark);margin-bottom:20px;font-family:'Fredoka One',cursive}
+.subject-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
+.subject-card{background:white;border-radius:22px;padding:18px 14px;text-align:center;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.12);border:3px solid rgba(0,0,0,.06);transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+.subject-card:hover{transform:translateY(-7px) rotate(-2deg);box-shadow:0 13px 0 rgba(0,0,0,.1)}
+.subject-card:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.1)}
+.subject-card .emoji{font-size:2.8rem;display:block;margin-bottom:6px}
+.subject-card .name{font-family:'Fredoka One',cursive;font-size:1.05rem;color:var(--dark)}
+.subject-card .diff{font-size:.72rem;color:#bbb;font-weight:700;margin-top:3px}
+
+/* DRAWING SCREEN */
+.draw-layout{max-width:1050px;margin:0 auto;padding:10px 16px 20px;display:flex;gap:16px;align-items:flex-start}
+.steps-panel{width:240px;flex-shrink:0}
+.back-btn{background:none;border:none;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;color:#bbb;cursor:pointer;padding:6px 0;margin-bottom:12px;display:flex;align-items:center;gap:5px;transition:color .2s}
+.back-btn:hover{color:var(--orange)}
+.steps-panel h2{font-size:1.25rem;color:var(--dark);margin-bottom:10px}
+.step-card{background:white;border-radius:16px;padding:13px;margin-bottom:10px;box-shadow:0 4px 0 rgba(0,0,0,.08);border:3px solid #eee;transition:border-color .3s,transform .3s,opacity .3s;opacity:.45}
+.step-card.active{border-color:var(--orange);opacity:1;transform:scale(1.03)}
+.step-card.done{border-color:var(--green);opacity:.75}
+.step-num{font-family:'Fredoka One',cursive;font-size:.85rem;color:var(--orange);margin-bottom:4px}
+.step-card.done .step-num{color:var(--green)}
+.step-check{float:right;color:var(--green);font-size:1rem;font-weight:900}
+.step-svg{width:90px;height:90px;margin:6px auto;display:block}
+.step-desc{font-size:.85rem;font-weight:700;color:#444;text-align:center;line-height:1.3}
+.step-nav{display:flex;gap:8px;margin-top:12px}
+.btn{font-family:'Nunito',sans-serif;font-weight:800;font-size:.9rem;border:none;border-radius:50px;padding:9px 16px;cursor:pointer;transition:transform .1s,box-shadow .1s;box-shadow:0 4px 0 rgba(0,0,0,.14)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 rgba(0,0,0,.14)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.14)}
+.btn-orange{background:var(--orange);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-pink{background:var(--pink);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-gray{background:#e8e8e8;color:#666}
+.btn-sm{padding:8px 13px;font-size:.82rem}
+
+/* CANVAS */
+.canvas-area{flex:1;min-width:0}
+.canvas-wrap{background:white;border-radius:22px;padding:14px;box-shadow:0 8px 0 rgba(0,0,0,.09);border:3px solid #eee}
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.palette{display:flex;gap:5px;flex-wrap:wrap}
+.swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .1s,border-color .1s;flex-shrink:0}
+.swatch:hover{transform:scale(1.25)}
+.swatch.sel{border-color:var(--dark);transform:scale(1.2)}
+.divider{width:2px;height:28px;background:#eee;border-radius:2px;flex-shrink:0}
+.sizes{display:flex;gap:5px;align-items:center}
+.sz{background:#f0f0f0;border:3px solid transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s,border-color .1s;flex-shrink:0}
+.sz:hover{transform:scale(1.2)}
+.sz.sel{border-color:var(--dark)}
+.sz.sm{width:24px;height:24px}.sz.md{width:32px;height:32px}.sz.lg{width:40px;height:40px}
+.dot{background:var(--dark);border-radius:50%}
+.sz.sm .dot{width:6px;height:6px}.sz.md .dot{width:12px;height:12px}.sz.lg .dot{width:20px;height:20px}
+#cvs{display:block;width:100%;aspect-ratio:1;border-radius:14px;cursor:crosshair;touch-action:none;border:2px solid #f5f5f5}
+.actions{display:flex;gap:8px;margin-top:10px;justify-content:flex-end}
+
+/* CELEBRATION */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100}
+.overlay.show{display:flex}
+.cel-card{background:white;border-radius:28px;padding:40px 36px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25);max-width:380px;animation:pop .5s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.cel-emoji{font-size:4.5rem;display:block;margin-bottom:12px;animation:boing .6s infinite alternate}
+@keyframes boing{from{transform:translateY(0) scale(1)}to{transform:translateY(-14px) scale(1.1)}}
+.cel-card h2{font-family:'Fredoka One',cursive;font-size:2.3rem;background:linear-gradient(135deg,var(--orange),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.cel-card p{font-size:1rem;color:#999;font-weight:700;margin-bottom:20px;line-height:1.4}
+.stars{font-size:1.8rem;margin-bottom:16px;letter-spacing:5px}
+.cel-btns{display:flex;gap:10px;justify-content:center}
+.confetti-p{position:fixed;pointer-events:none;z-index:200;animation:fall linear forwards}
+@keyframes fall{0%{transform:translateY(-30px) rotate(0deg);opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:0}}
+
+/* Subject name banner */
+.subject-banner{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.subject-banner .emoji{font-size:1.6rem}
+.subject-banner h2{font-size:1.2rem;color:var(--dark)}
+
+@media(max-width:680px){
+  .draw-layout{flex-direction:column}
+  .steps-panel{width:100%}
+  .header h1{font-size:2rem}
+  .step-card{display:flex;gap:10px;align-items:center}
+  .step-svg{width:60px;height:60px;flex-shrink:0}
+  .step-desc{text-align:left}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎨 DrawKids!</h1>
+  <p>Step-by-step drawing for everyone</p>
+</div>
+
+<!-- PICKER -->
+<div class="screen active" id="pickerScreen">
+  <div class="picker">
+    <p class="picker-title">🖌️ What shall we draw today?</p>
+    <div class="subject-grid" id="grid"></div>
+  </div>
+</div>
+
+<!-- DRAW -->
+<div class="screen" id="drawScreen">
+  <div class="draw-layout">
+    <div class="steps-panel">
+      <button class="back-btn" onclick="goBack()">← Choose another</button>
+      <div class="subject-banner"><span class="emoji" id="bannerEmoji"></span><h2 id="bannerName"></h2></div>
+      <div id="stepsWrap"></div>
+      <div class="step-nav">
+        <button class="btn btn-gray btn-sm" onclick="prevStep()">← Back</button>
+        <button class="btn btn-orange btn-sm" onclick="nextStep()">Next →</button>
+      </div>
+    </div>
+    <div class="canvas-area">
+      <div class="canvas-wrap">
+        <div class="toolbar">
+          <div class="palette" id="palette"></div>
+          <div class="divider"></div>
+          <div class="sizes">
+            <button class="sz sm" id="szSm" onclick="setSize(4,'szSm')"><div class="dot"></div></button>
+            <button class="sz md sel" id="szMd" onclick="setSize(10,'szMd')"><div class="dot"></div></button>
+            <button class="sz lg" id="szLg" onclick="setSize(20,'szLg')"><div class="dot"></div></button>
+          </div>
+          <div class="divider"></div>
+          <button class="btn btn-gray btn-sm" id="eraseBtn" onclick="toggleEraser()">🧹 Eraser</button>
+        </div>
+        <canvas id="cvs"></canvas>
+        <div class="actions">
+          <button class="btn btn-gray btn-sm" onclick="clearCvs()">🗑️ Clear all</button>
+          <button class="btn btn-pink" onclick="celebrate()">🌟 I'm done!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CELEBRATION -->
+<div class="overlay" id="overlay">
+  <div class="cel-card">
+    <span class="cel-emoji" id="celEmoji">🎉</span>
+    <div class="stars">⭐⭐⭐</div>
+    <h2>Amazing!</h2>
+    <p id="celMsg">You did a fantastic job!</p>
+    <div class="cel-btns">
+      <button class="btn btn-orange" onclick="drawAgain()">Draw again!</button>
+      <button class="btn btn-blue" onclick="chooseDiff()">Pick another</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SVG BUILDERS ──────────────────────────────────────────
+function mkSvg(inner){return`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`}
+
+const sunParts=[
+  `<circle cx="60" cy="60" r="33" fill="none" stroke="#FF6B35" stroke-width="5"/>`,
+  `<line x1="60" y1="10" x2="60" y2="22" stroke="#FF6B35" stroke-width="5" stroke-linecap="round"/>
+   <line x1="60" y1="98" x2="60" y2="110" stroke="#FF6B35" stroke-width="5" stroke-linecap="round"/>
+   <line x1="10" y1="60" x2="22" y2="60" stroke="#FF6B35" stroke-width="5" stroke-linecap="round"/>
+   <line x1="98" y1="60" x2="110" y2="60" stroke="#FF6B35" stroke-width="5" stroke-linecap="round"/>
+   <line x1="24" y1="24" x2="33" y2="33" stroke="#FF6B35" stroke-width="5" stroke-linecap="round"/>
+   <line x1="87" y1="87" x2="96" y2="96" stroke="#FF6B35" stroke-width="5" stroke-linecap="round"/>
+   <line x1="96" y1="24" x2="87" y2="33" stroke="#FF6B35" stroke-width="5" stroke-linecap="round"/>
+   <line x1="24" y1="96" x2="33" y2="87" stroke="#FF6B35" stroke-width="5" stroke-linecap="round"/>`,
+  `<circle cx="50" cy="56" r="4" fill="#FF6B35"/>
+   <circle cx="70" cy="56" r="4" fill="#FF6B35"/>
+   <path d="M47,70 Q60,82 73,70" stroke="#FF6B35" stroke-width="4" fill="none" stroke-linecap="round"/>`
+];
+function sunSvgs(){let a=sunParts[0],b=a+sunParts[1],c=b+sunParts[2];return[mkSvg(a),mkSvg(b),mkSvg(c)]}
+
+const catParts=[
+  `<circle cx="60" cy="68" r="34" fill="none" stroke="#C77DFF" stroke-width="5"/>`,
+  `<polygon points="30,44 18,14 46,34" fill="none" stroke="#C77DFF" stroke-width="5" stroke-linejoin="round"/>
+   <polygon points="90,44 102,14 74,34" fill="none" stroke="#C77DFF" stroke-width="5" stroke-linejoin="round"/>`,
+  `<ellipse cx="47" cy="63" rx="6" ry="7" fill="#C77DFF"/>
+   <ellipse cx="73" cy="63" rx="6" ry="7" fill="#C77DFF"/>`,
+  `<circle cx="60" cy="76" r="4" fill="#FF6B9D"/>
+   <line x1="60" y1="76" x2="60" y2="84" stroke="#C77DFF" stroke-width="3"/>
+   <line x1="34" y1="70" x2="52" y2="72" stroke="#C77DFF" stroke-width="3" stroke-linecap="round"/>
+   <line x1="68" y1="72" x2="86" y2="70" stroke="#C77DFF" stroke-width="3" stroke-linecap="round"/>
+   <line x1="34" y1="77" x2="52" y2="76" stroke="#C77DFF" stroke-width="3" stroke-linecap="round"/>
+   <line x1="68" y1="76" x2="86" y2="77" stroke="#C77DFF" stroke-width="3" stroke-linecap="round"/>`
+];
+function catSvgs(){let a=catParts[0],b=a+catParts[1],c=b+catParts[2],d=c+catParts[3];return[mkSvg(a),mkSvg(b),mkSvg(c),mkSvg(d)]}
+
+const houseParts=[
+  `<rect x="18" y="62" width="84" height="54" fill="none" stroke="#EF476F" stroke-width="5" stroke-linejoin="round"/>`,
+  `<polygon points="8,64 60,14 112,64" fill="none" stroke="#EF476F" stroke-width="5" stroke-linejoin="round"/>`,
+  `<rect x="46" y="88" width="28" height="28" rx="14" fill="none" stroke="#EF476F" stroke-width="4"/>`,
+  `<rect x="24" y="70" width="22" height="18" rx="3" fill="none" stroke="#EF476F" stroke-width="4"/>
+   <line x1="35" y1="70" x2="35" y2="88" stroke="#EF476F" stroke-width="3"/>
+   <line x1="24" y1="79" x2="46" y2="79" stroke="#EF476F" stroke-width="3"/>
+   <rect x="74" y="70" width="22" height="18" rx="3" fill="none" stroke="#EF476F" stroke-width="4"/>
+   <line x1="85" y1="70" x2="85" y2="88" stroke="#EF476F" stroke-width="3"/>
+   <line x1="74" y1="79" x2="96" y2="79" stroke="#EF476F" stroke-width="3"/>`
+];
+function houseSvgs(){let a=houseParts[0],b=a+houseParts[1],c=b+houseParts[2],d=c+houseParts[3];return[mkSvg(a),mkSvg(b),mkSvg(c),mkSvg(d)]}
+
+const fishParts=[
+  `<ellipse cx="54" cy="60" rx="42" ry="28" fill="none" stroke="#4CC9F0" stroke-width="5"/>`,
+  `<polygon points="97,60 114,40 114,80" fill="none" stroke="#4CC9F0" stroke-width="5" stroke-linejoin="round"/>`,
+  `<circle cx="24" cy="52" r="7" fill="none" stroke="#4CC9F0" stroke-width="4"/>
+   <circle cx="24" cy="52" r="3" fill="#4CC9F0"/>`,
+  `<path d="M40,36 Q56,26 72,38" stroke="#4CC9F0" stroke-width="4" fill="none" stroke-linecap="round"/>
+   <path d="M40,84 Q56,94 72,82" stroke="#4CC9F0" stroke-width="4" fill="none" stroke-linecap="round"/>
+   <path d="M52,38 Q62,60 52,82" stroke="#4CC9F0" stroke-width="3" fill="none" stroke-linecap="round"/>
+   <path d="M66,36 Q76,60 66,84" stroke="#4CC9F0" stroke-width="3" fill="none" stroke-linecap="round"/>`
+];
+function fishSvgs(){let a=fishParts[0],b=a+fishParts[1],c=b+fishParts[2],d=c+fishParts[3];return[mkSvg(a),mkSvg(b),mkSvg(c),mkSvg(d)]}
+
+const treeParts=[
+  `<rect x="46" y="78" width="28" height="34" rx="4" fill="none" stroke="#8B6914" stroke-width="5"/>`,
+  `<polygon points="60,6 16,78 104,78" fill="none" stroke="#06D6A0" stroke-width="5" stroke-linejoin="round"/>`,
+  `<polygon points="60,28 20,82 100,82" fill="none" stroke="#06D6A0" stroke-width="5" stroke-linejoin="round"/>`,
+  `<line x1="60" y1="44" x2="48" y2="58" stroke="#06D6A0" stroke-width="3" stroke-linecap="round"/>
+   <line x1="60" y1="36" x2="72" y2="52" stroke="#06D6A0" stroke-width="3" stroke-linecap="round"/>
+   <line x1="54" y1="54" x2="42" y2="66" stroke="#06D6A0" stroke-width="3" stroke-linecap="round"/>`
+];
+function treeSvgs(){let a=treeParts[0],b=a+treeParts[1],c=b+treeParts[2],d=c+treeParts[3];return[mkSvg(a),mkSvg(b),mkSvg(c),mkSvg(d)]}
+
+const starParts=[
+  `<polygon points="60,5 73,43 113,43 80,66 93,104 60,81 27,104 40,66 7,43 47,43" fill="none" stroke="#FFB800" stroke-width="5" stroke-linejoin="round"/>`,
+  `<circle cx="51" cy="52" r="4" fill="#FFB800"/>
+   <circle cx="69" cy="52" r="4" fill="#FFB800"/>
+   <path d="M48,66 Q60,77 72,66" stroke="#FFB800" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+  `<line x1="6" y1="6" x2="6" y2="17" stroke="#FFB800" stroke-width="3" stroke-linecap="round"/>
+   <line x1="1" y1="12" x2="11" y2="12" stroke="#FFB800" stroke-width="3" stroke-linecap="round"/>
+   <line x1="114" y1="6" x2="114" y2="17" stroke="#FFB800" stroke-width="3" stroke-linecap="round"/>
+   <line x1="109" y1="12" x2="119" y2="12" stroke="#FFB800" stroke-width="3" stroke-linecap="round"/>
+   <line x1="114" y1="100" x2="114" y2="111" stroke="#FFB800" stroke-width="3" stroke-linecap="round"/>
+   <line x1="109" y1="106" x2="119" y2="106" stroke="#FFB800" stroke-width="3" stroke-linecap="round"/>`
+];
+function starSvgs(){let a=starParts[0],b=a+starParts[1],c=b+starParts[2];return[mkSvg(a),mkSvg(b),mkSvg(c)]}
+
+const flowerParts=[
+  `<line x1="60" y1="112" x2="60" y2="72" stroke="#06D6A0" stroke-width="6" stroke-linecap="round"/>
+   <path d="M60,90 Q38,80 34,65" stroke="#06D6A0" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+  `<circle cx="60" cy="50" r="14" fill="none" stroke="#FF6B9D" stroke-width="5"/>
+   <circle cx="38" cy="38" r="12" fill="none" stroke="#FF6B9D" stroke-width="5"/>
+   <circle cx="82" cy="38" r="12" fill="none" stroke="#FF6B9D" stroke-width="5"/>
+   <circle cx="38" cy="62" r="12" fill="none" stroke="#FF6B9D" stroke-width="5"/>
+   <circle cx="82" cy="62" r="12" fill="none" stroke="#FF6B9D" stroke-width="5"/>`,
+  `<circle cx="60" cy="50" r="11" fill="none" stroke="#FFD93D" stroke-width="5"/>
+   <circle cx="60" cy="50" r="4" fill="#FFD93D"/>`
+];
+function flowerSvgs(){let a=flowerParts[0],b=a+flowerParts[1],c=b+flowerParts[2];return[mkSvg(a),mkSvg(b),mkSvg(c)]}
+
+const rocketParts=[
+  `<path d="M60,6 Q76,24 80,66 L40,66 Q44,24 60,6Z" fill="none" stroke="#EF476F" stroke-width="5" stroke-linejoin="round"/>`,
+  `<path d="M40,56 L22,80 L40,72 Z" fill="none" stroke="#EF476F" stroke-width="5" stroke-linejoin="round"/>
+   <path d="M80,56 L98,80 L80,72 Z" fill="none" stroke="#EF476F" stroke-width="5" stroke-linejoin="round"/>`,
+  `<circle cx="60" cy="38" r="11" fill="none" stroke="#4CC9F0" stroke-width="5"/>`,
+  `<path d="M46,66 Q48,90 60,96 Q72,90 74,66" fill="none" stroke="#FFD93D" stroke-width="5" stroke-linecap="round"/>
+   <path d="M52,70 Q54,84 60,89 Q66,84 68,70" fill="none" stroke="#FF6B35" stroke-width="4" stroke-linecap="round"/>`
+];
+function rocketSvgs(){let a=rocketParts[0],b=a+rocketParts[1],c=b+rocketParts[2],d=c+rocketParts[3];return[mkSvg(a),mkSvg(b),mkSvg(c),mkSvg(d)]}
+
+const snailParts=[
+  `<path d="M60,80 Q80,80 80,60 Q80,38 60,38 Q40,38 40,58 Q40,72 54,76" fill="none" stroke="#FF6B9D" stroke-width="5" stroke-linecap="round"/>
+   <circle cx="60" cy="58" r="12" fill="none" stroke="#FF6B9D" stroke-width="4"/>`,
+  `<path d="M54,76 Q30,80 18,70 Q10,64 14,56 Q18,48 30,52 Q42,56 54,76Z" fill="none" stroke="#C77DFF" stroke-width="5" stroke-linejoin="round"/>`,
+  `<line x1="44" y1="38" x2="40" y2="26" stroke="#FF6B9D" stroke-width="4" stroke-linecap="round"/>
+   <line x1="52" y1="36" x2="50" y2="24" stroke="#FF6B9D" stroke-width="4" stroke-linecap="round"/>
+   <circle cx="40" cy="24" r="4" fill="#FF6B9D"/>
+   <circle cx="50" cy="22" r="4" fill="#FF6B9D"/>`,
+  `<circle cx="32" cy="54" r="4" fill="#C77DFF"/>
+   <path d="M60,58 Q56,58 54,62" stroke="#FF6B9D" stroke-width="3" fill="none" stroke-linecap="round"/>
+   <path d="M22,60 Q26,56 30,60" stroke="#C77DFF" stroke-width="3" fill="none" stroke-linecap="round"/>`
+];
+function snailSvgs(){let a=snailParts[0],b=a+snailParts[1],c=b+snailParts[2],d=c+snailParts[3];return[mkSvg(a),mkSvg(b),mkSvg(c),mkSvg(d)]}
+
+// ── SUBJECTS ──────────────────────────────────────────────
+const SUBJECTS=[
+  {id:'sun',name:'Sunny Sun',emoji:'☀️',bg:'#FFF3C4',
+   steps:['Draw a big round circle','Add 8 rays pointing outward','Add two eyes and a big smile!'],
+   svgs:sunSvgs(),msgs:['What a gorgeous sun! You must be a natural! ☀️','Absolutely radiant! Your sun glows! 🌟']},
+  {id:'cat',name:'Cute Cat',emoji:'🐱',bg:'#EFE0FF',
+   steps:['Draw a round circle for the head','Add two pointy triangle ears on top','Draw two big oval eyes','Add a nose, mouth and long whiskers!'],
+   svgs:catSvgs(),msgs:['Meow-velous! That cat is SO cute! 🐱','Purr-fect! You are an amazing artist! 🐾']},
+  {id:'house',name:'My House',emoji:'🏠',bg:'#FFE0E6',
+   steps:['Draw a big square for the walls','Add a triangle roof on top','Draw an arched door in the middle','Add two windows with cross lines!'],
+   svgs:houseSvgs(),msgs:['What a beautiful house! Anyone would love to live there! 🏠','Incredible! It looks so cozy and lovely! 🏡']},
+  {id:'fish',name:'Happy Fish',emoji:'🐠',bg:'#D6F3FF',
+   steps:['Draw an oval shape for the body','Add a triangle tail at the back','Draw a circle eye with a dot','Add fins and scale lines!'],
+   svgs:fishSvgs(),msgs:["Splendid! That fish could swim right off the page! 🐠","Oh WOW, what a beautiful fish! 🌊"]},
+  {id:'tree',name:'Tall Tree',emoji:'🌲',bg:'#D6FFE8',
+   steps:['Draw a rectangle trunk at the bottom','Add a big triangle on top for leaves','Add another triangle overlapping it','Draw some branch lines inside!'],
+   svgs:treeSvgs(),msgs:['What a magnificent tree! Perfect for climbing! 🌲','Your tree looks so tall and grand! 🍃']},
+  {id:'star',name:'Lucky Star',emoji:'⭐',bg:'#FFF7D4',
+   steps:['Draw a 5-pointed star shape','Add a cute smiley face inside','Draw little sparkle crosses around it!'],
+   svgs:starSvgs(),msgs:["You're a star — and so is your drawing! ⭐","Absolutely stellar work! You nailed it! 🌟"]},
+  {id:'flower',name:'Pretty Flower',emoji:'🌸',bg:'#FFE0F0',
+   steps:['Draw a long stem with a curved leaf','Add 5 round petals around the top','Draw a bright circle in the very middle!'],
+   svgs:flowerSvgs(),msgs:['Your flower is blooming with talent! 🌸','Beautiful! That flower brightens everything up! 🌺']},
+  {id:'rocket',name:'Rocket Ship',emoji:'🚀',bg:'#FFE8E0',
+   steps:['Draw a pointed oval rocket body','Add two triangle fins on the sides','Draw a round porthole window','Add big fire flames at the bottom!'],
+   svgs:rocketSvgs(),msgs:['3, 2, 1… BLAST OFF! Amazing rocket! 🚀','Your rocket is out of this world! 🌙']},
+  {id:'snail',name:'Tiny Snail',emoji:'🐌',bg:'#F0E0FF',
+   steps:['Draw the shell — a spiral on an oval','Add the snail body below the shell','Draw two antennae with eyes on tips','Add a little eye and smiley mouth!'],
+   svgs:snailSvgs(),msgs:["Slow and beautiful — just like a real snail! 🐌","You've drawn the most adorable snail ever! 🌿"]},
+];
+
+// ── STATE ────────────────────────────────────────────────
+const COLORS=['#2D2D2D','#EF476F','#FF6B35','#FFD93D','#06D6A0','#4CC9F0','#9B5DE5','#FF6B9D','#118AB2','#38B000','#FF5722','#795548'];
+let sub=null,step=0,drawing=false,color='#2D2D2D',size=10,eraser=false,lx=0,ly=0;
+
+// ── GRID ─────────────────────────────────────────────────
+function initGrid(){
+  const g=document.getElementById('grid');
+  g.innerHTML=SUBJECTS.map(s=>`
+    <div class="subject-card" onclick="pick('${s.id}')" style="background:${s.bg}">
+      <span class="emoji">${s.emoji}</span>
+      <div class="name">${s.name}</div>
+      <div class="diff">${s.steps.length} steps</div>
+    </div>`).join('');
+}
+
+function pick(id){
+  sub=SUBJECTS.find(s=>s.id===id);
+  step=0;
+  document.getElementById('bannerEmoji').textContent=sub.emoji;
+  document.getElementById('bannerName').textContent=sub.name;
+  renderSteps();
+  clearCvs();
+  show('drawScreen');
+}
+
+function renderSteps(){
+  const w=document.getElementById('stepsWrap');
+  w.innerHTML=sub.steps.map((desc,i)=>`
+    <div class="step-card ${i<step?'done':''} ${i===step?'active':''}">
+      <div class="step-num">${i<step?`<span class="step-check">✓</span>`:''}Step ${i+1}</div>
+      <img class="step-svg" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(sub.svgs[i])}" alt="step ${i+1}"/>
+      <div class="step-desc">${desc}</div>
+    </div>`).join('');
+}
+
+function prevStep(){if(step>0){step--;renderSteps()}}
+function nextStep(){if(step<sub.steps.length-1){step++;renderSteps();document.querySelector(`#stepsWrap .step-card.active`)?.scrollIntoView({behavior:'smooth',block:'nearest'})}}
+
+// ── CANVAS ───────────────────────────────────────────────
+function initCanvas(){
+  const cvs=document.getElementById('cvs');
+  const wrap=cvs.parentElement;
+  const s=wrap.clientWidth-28;
+  cvs.width=s;cvs.height=s;
+  fillWhite();
+  initPalette();
+
+  cvs.addEventListener('mousedown',e=>startD(e));
+  cvs.addEventListener('mousemove',e=>doD(e));
+  cvs.addEventListener('mouseup',stopD);
+  cvs.addEventListener('mouseleave',stopD);
+  cvs.addEventListener('touchstart',e=>{e.preventDefault();startD(e.touches[0])},{passive:false});
+  cvs.addEventListener('touchmove',e=>{e.preventDefault();doD(e.touches[0])},{passive:false});
+  cvs.addEventListener('touchend',stopD);
+}
+
+function pos(e){
+  const cvs=document.getElementById('cvs');
+  const r=cvs.getBoundingClientRect();
+  return{x:(e.clientX-r.left)*(cvs.width/r.width),y:(e.clientY-r.top)*(cvs.height/r.height)};
+}
+function startD(e){
+  drawing=true;const p=pos(e);lx=p.x;ly=p.y;
+  const ctx=document.getElementById('cvs').getContext('2d');
+  ctx.beginPath();ctx.arc(lx,ly,(eraser?size*2.5:size)/2,0,Math.PI*2);
+  ctx.fillStyle=eraser?'white':color;ctx.fill();
+}
+function doD(e){
+  if(!drawing)return;
+  const ctx=document.getElementById('cvs').getContext('2d');
+  const p=pos(e);
+  ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);
+  ctx.strokeStyle=eraser?'white':color;
+  ctx.lineWidth=eraser?size*2.5:size;
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+  lx=p.x;ly=p.y;
+}
+function stopD(){drawing=false}
+function fillWhite(){const cvs=document.getElementById('cvs');const ctx=cvs.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,cvs.width,cvs.height)}
+function clearCvs(){fillWhite()}
+
+function initPalette(){
+  const p=document.getElementById('palette');
+  p.innerHTML=COLORS.map(c=>`<div class="swatch ${c===color?'sel':''}" style="background:${c}" onclick="setCol('${c}',this)"></div>`).join('');
+}
+function setCol(c,el){
+  color=c;eraser=false;
+  document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('sel'));
+  el.classList.add('sel');
+  const btn=document.getElementById('eraseBtn');
+  btn.style.background='';btn.textContent='🧹 Eraser';
+}
+function setSize(s,id){
+  size=s;
+  ['szSm','szMd','szLg'].forEach(x=>document.getElementById(x).classList.remove('sel'));
+  document.getElementById(id).classList.add('sel');
+}
+function toggleEraser(){
+  eraser=!eraser;
+  const btn=document.getElementById('eraseBtn');
+  if(eraser){btn.style.background='#FFD93D';btn.textContent='✏️ Draw mode';}
+  else{btn.style.background='';btn.textContent='🧹 Eraser';}
+}
+
+// ── SCREENS ──────────────────────────────────────────────
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function goBack(){show('pickerScreen')}
+
+// ── CELEBRATE ────────────────────────────────────────────
+function celebrate(){
+  const ov=document.getElementById('overlay');ov.classList.add('show');
+  document.getElementById('celEmoji').textContent=sub.emoji;
+  document.getElementById('celMsg').textContent=sub.msgs[Math.floor(Math.random()*sub.msgs.length)];
+  confetti();
+}
+function drawAgain(){document.getElementById('overlay').classList.remove('show');clearCvs();step=0;renderSteps()}
+function chooseDiff(){document.getElementById('overlay').classList.remove('show');goBack()}
+function confetti(){
+  const cols=['#FFD93D','#FF6B35','#FF6B9D','#C77DFF','#4CC9F0','#06D6A0','#EF476F','#38B000'];
+  for(let i=0;i<90;i++){
+    setTimeout(()=>{
+      const p=document.createElement('div');p.className='confetti-p';
+      const sz=6+Math.random()*12;
+      p.style.cssText=`left:${Math.random()*100}vw;top:-20px;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};border-radius:${Math.random()>.5?'50%':'3px'};animation-duration:${1.5+Math.random()*2.5}s;animation-delay:${Math.random()*.4}s`;
+      document.body.appendChild(p);setTimeout(()=>p.remove(),4500);
+    },i*28);
+  }
+}
+
+// ── START ────────────────────────────────────────────────
+initGrid();
+// init canvas after it's visible on first pick
+window._cvsReady=false;
+const _origPick=pick;
+window.pick=function(id){_origPick(id);if(!window._cvsReady){window._cvsReady=true;setTimeout(initCanvas,10);}};
+</script>
+</body>
+</html>
