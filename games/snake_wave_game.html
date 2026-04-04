@@ -85,7 +85,7 @@ let frameN = 0;
 let waveDoneTimer = -1;
 let waveLabel = '';
 let labelTimer = 0;
-const keys = {};
+window.keys = {}; const keys = window.keys;
 
 window.addEventListener('keydown', e => {
   keys[e.key] = true;
@@ -791,15 +791,16 @@ loop();
     if (hint) hint.textContent = 'TAP BUTTONS TO MOVE & JUMP | STOMP SNAKES FROM ABOVE!';
   }
 
-  // Simulate key presses
+  // Direct key state manipulation — bypasses KeyboardEvent which fails on some mobile browsers
   function simKey(key, down) {
-    var evt = new KeyboardEvent(down ? 'keydown' : 'keyup', { key: key, bubbles: true });
-    window.dispatchEvent(evt);
+    // Set directly on the game's keys object (now global)
     if (window.keys) window.keys[key] = down;
+    // Also dispatch event for menu/gameover handlers
+    try {
+      var evt = new KeyboardEvent(down ? 'keydown' : 'keyup', { key: key, bubbles: true, cancelable: true });
+      window.dispatchEvent(evt);
+    } catch(e) {}
   }
-
-  // Make keys global if not already
-  if (!window.keys) window.keys = {};
 
   var btns = [
     ['tc-left', 'ArrowLeft'],
@@ -833,14 +834,15 @@ loop();
     });
   });
 
-  // Tap canvas to start/restart (for menu/gameover)
-  var canvas = document.querySelector('canvas');
-  if (canvas) {
-    canvas.addEventListener('touchstart', function() {
+  // Tap anywhere to start/restart (for menu/gameover)  
+  document.addEventListener('touchstart', function(e) {
+    // Only trigger start/restart if not pressing a control button
+    if (e.target.id && e.target.id.startsWith('tc-')) return;
+    if (typeof gs !== 'undefined' && (gs === 'menu' || gs === 'waveClear' || gs === 'gameOver')) {
       simKey(' ', true);
       setTimeout(function() { simKey(' ', false); }, 100);
-    });
-  }
+    }
+  }, { passive: true });
 })();
 </script>
 </body>
