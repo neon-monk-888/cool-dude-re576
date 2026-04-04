@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dino Painter!</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Comic Sans MS','Chalkboard SE',Trebuchet MS,cursive;background:#1b4a30;min-height:100vh;overflow-x:hidden}
+.leaves{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.game{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+
+/* PICKER */
+#ps{display:flex;flex-direction:column;align-items:center;padding:24px 16px;width:100%}
+.pg-title{font-size:2.6rem;color:#ffd93d;text-shadow:4px 4px 0 #7a4a00;letter-spacing:3px;margin-bottom:8px;text-align:center}
+.pg-sub{color:#7ec850;font-size:1.15rem;margin-bottom:24px;font-weight:700;text-align:center}
+.dg-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;max-width:700px}
+.dc{background:#fffef0;border-radius:20px;padding:16px 10px;cursor:pointer;text-align:center;width:120px;
+  border:4px solid transparent;box-shadow:0 6px 0 rgba(0,0,0,.35);transition:transform .18s,border-color .18s;user-select:none}
+.dc:hover{transform:translateY(-7px) scale(1.06);border-color:#ffd93d}
+.dc:active{transform:translateY(-2px)}
+.dc-i{font-size:2.6rem;line-height:1.2}
+.dc-n{font-size:.88rem;color:#1a4a2e;font-weight:700;margin-top:6px}
+
+/* COLOR SCREEN */
+#cs{display:none;flex-direction:column;align-items:center;width:100%;padding:10px 12px;min-height:100vh}
+.tb{display:flex;align-items:center;width:100%;max-width:720px;gap:12px;margin-bottom:8px}
+.btn{font-family:inherit;border:none;border-radius:50px;padding:10px 20px;font-size:.95rem;
+  cursor:pointer;font-weight:700;transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(3px)}
+.bb{background:#ff6b6b;color:#fff;box-shadow:0 5px 0 #b03030}
+.bb:active{box-shadow:0 2px 0 #b03030}
+.db{background:#ffd93d;color:#1a4a2e;box-shadow:0 5px 0 #8a6200}
+.db:active{box-shadow:0 2px 0 #8a6200}
+.nt{flex:1;text-align:center;font-size:1.4rem;color:#ffd93d;text-shadow:2px 2px 0 #8a6200}
+.cw{background:#fffef0;border-radius:20px;box-shadow:0 10px 32px rgba(0,0,0,.45);
+  display:flex;align-items:center;justify-content:center;width:100%;max-width:720px;
+  padding:16px;margin-bottom:10px;flex:1;min-height:320px;max-height:480px}
+#ds{width:100%;height:100%;cursor:crosshair;max-height:440px}
+.pal{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;max-width:720px;width:100%;
+  padding:10px 14px;background:rgba(255,255,255,.13);border-radius:50px;margin-bottom:10px}
+.sw{width:42px;height:42px;border-radius:50%;cursor:pointer;border:3px solid rgba(255,255,255,.25);
+  transition:transform .15s;flex-shrink:0}
+.sw:hover{transform:scale(1.22)}
+.sw.on{border:4px solid #fff;transform:scale(1.32);box-shadow:0 0 0 4px rgba(255,255,255,.4)}
+.cbtn{background:#fff;color:#1a4a2e;border:3px solid rgba(255,255,255,.3);border-radius:50px;
+  padding:7px 16px;cursor:pointer;font-family:inherit;font-weight:700;font-size:.88rem;white-space:nowrap;
+  transition:transform .1s}
+.cbtn:hover{transform:scale(1.06)}
+
+/* CELEBRATION */
+#cel{display:none;position:fixed;inset:0;background:rgba(8,35,18,.94);z-index:100;
+  flex-direction:column;align-items:center;justify-content:center}
+.ci{font-size:6rem;animation:bob .65s ease infinite alternate;margin-bottom:4px}
+.cm{font-size:2.6rem;color:#ffd93d;text-shadow:4px 4px 0 #8a6200;text-align:center;
+  padding:0 20px;margin-bottom:8px;animation:bob .65s .1s ease infinite alternate}
+.cs2{color:#7ec850;font-size:1.2rem;margin-bottom:30px;font-weight:700}
+.ab{background:#ffd93d;color:#1a4a2e;border:none;border-radius:50px;padding:16px 44px;
+  font-size:1.3rem;font-family:inherit;font-weight:700;cursor:pointer;
+  box-shadow:0 7px 0 #8a6200;transition:transform .1s,box-shadow .1s}
+.ab:active{transform:translateY(4px);box-shadow:0 3px 0 #8a6200}
+#cl{position:fixed;inset:0;pointer-events:none;z-index:101;overflow:hidden}
+
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(-16px)}}
+@keyframes cf{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(900deg);opacity:0}}
+</style>
+</head>
+<body>
+
+<!-- Jungle leaf background -->
+<div class="leaves">
+<svg width="100%" height="100%" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" opacity=".18">
+  <g fill="#5ecf7e">
+    <path d="M-80,0 Q140,-40 100,180 Q60,400 -50,320 Q-160,240 -80,0Z"/>
+    <path d="M-100,70 Q80,20 110,220 Q140,420 10,390 Q-120,360 -100,70Z" opacity=".55"/>
+    <path d="M1060,0 Q1200,140 1100,320 Q1000,500 950,380 Q900,260 1060,0Z"/>
+    <path d="M1080,40 Q1210,180 1110,360 Q1010,540 970,420 Q930,300 1080,40Z" opacity=".55"/>
+    <path d="M-60,580 Q80,540 100,700 L-80,700Z"/>
+    <path d="M-80,620 Q60,580 80,700 L-100,700Z" opacity=".6"/>
+    <path d="M1050,600 Q1140,560 1160,680 L1160,700 L980,700Z"/>
+  </g>
+</svg>
+</div>
+
+<div class="game">
+
+<!-- PICKER SCREEN -->
+<div id="ps">
+  <div class="pg-title">🦕 DINO PAINTER! 🎨</div>
+  <div class="pg-sub">Pick a dinosaur to paint!</div>
+  <div class="dg-grid" id="dgg"></div>
+</div>
+
+<!-- COLOURING SCREEN -->
+<div id="cs">
+  <div class="tb">
+    <button class="btn bb" onclick="back()">&#8592; Back</button>
+    <div class="nt" id="nb">T-Rex</div>
+    <button class="btn db" onclick="showCel()">Done! &#9733;</button>
+  </div>
+  <div class="cw">
+    <svg id="ds" viewBox="0 0 500 380" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+  <div class="pal" id="pal"></div>
+</div>
+
+</div><!-- end .game -->
+
+<!-- CELEBRATION OVERLAY -->
+<div id="cel">
+  <div style="position:relative;z-index:102;display:flex;flex-direction:column;align-items:center">
+    <div class="ci" id="ci">🦖</div>
+    <div class="cm" id="cm">Amazing!!!</div>
+    <div class="cs2">You painted a dinosaur!</div>
+    <button class="ab" onclick="back()">Paint Another! &#9654;</button>
+  </div>
+</div>
+<div id="cl"></div>
+
+<script>
+const COLS=['#ff3333','#ff8800','#ffdd00','#88dd00','#22aa44','#00bbaa','#00aaff','#4455ff','#8833ff','#ff44cc','#ff88aa','#884400','#ddaa66','#aaaaaa','#ffffff','#111111'];
+const MSGS=['Amazing!!!','Brilliant!!!','Wonderful!!!','Fantastic!!!','You Rock!!!','Incredible!!!','Super Star!!!','Wow wow wow!!!'];
+let pick=COLS[0],dino=null;
+const NS='http://www.w3.org/2000/svg';
+
+function ze(cx,cy,rx,ry,l){return{tag:'ellipse',cx,cy,rx,ry,label:l,fill:'#f5f5f5',sw:5}}
+function zp(pts,l){return{tag:'polygon',points:pts,label:l,fill:'#f5f5f5',sw:5}}
+
+const DINOS=[
+{id:'trex',name:'T-Rex',ico:'🦖',col:'#ff6b6b',eye:{cx:390,cy:116,r:11},zones:[
+  zp('75,240 35,295 88,305 130,265','Tail'),
+  ze(228,225,135,95,'Body'),
+  ze(240,255,75,50,'Belly'),
+  zp('308,155 356,142 372,200 328,222','Neck'),
+  ze(392,128,70,46,'Head'),
+  zp('330,146 402,158 422,178 362,188 330,172','Jaw'),
+  ze(312,196,22,30,'Arm'),
+  ze(178,308,33,53,'Left Leg'),ze(265,308,30,50,'Right Leg'),
+  ze(162,356,40,19,'Left Foot'),ze(255,352,36,18,'Right Foot')]},
+{id:'trice',name:'Triceratops',ico:'🦕',col:'#4ecdc4',eye:{cx:76,cy:218,r:10},zones:[
+  zp('422,232 472,205 468,268 432,278','Tail'),
+  ze(265,238,158,96,'Body'),ze(265,270,92,56,'Belly'),
+  zp('110,208 148,198 152,260 114,262','Neck'),
+  ze(88,224,56,52,'Head'),ze(112,198,72,82,'Frill'),
+  zp('47,213 39,182 60,182','Horn 1'),
+  zp('74,180 66,146 90,156','Horn 2'),
+  zp('100,174 95,138 120,150','Horn 3'),
+  ze(158,312,28,52,'FL Leg'),ze(218,314,26,50,'FR Leg'),
+  ze(328,312,30,52,'BL Leg'),ze(390,310,28,50,'BR Leg')]},
+{id:'steg',name:'Stegosaurus',ico:'🦕',col:'#88dd00',eye:{cx:70,cy:224,r:9},zones:[
+  zp('420,268 472,232 478,302 442,308','Tail'),
+  zp('452,228 467,196 480,228','Tail Spike 1'),zp('470,218 482,186 494,218','Tail Spike 2'),
+  ze(268,252,162,92,'Body'),ze(268,280,90,52,'Belly'),
+  zp('152,178 167,126 184,178','Plate 1'),zp('184,162 204,98 226,162','Plate 2'),
+  zp('220,154 245,86 272,154','Plate 3'),zp('270,157 296,88 322,157','Plate 4'),
+  zp('318,166 340,108 362,166','Plate 5'),zp('358,176 378,128 398,176','Plate 6'),
+  zp('108,212 144,202 140,266 104,266','Neck'),ze(86,230,44,36,'Head'),
+  ze(163,320,28,52,'FL Leg'),ze(224,318,26,50,'FR Leg'),
+  ze(318,320,28,52,'BL Leg'),ze(380,316,26,50,'BR Leg')]},
+{id:'bronto',name:'Brontosaurus',ico:'🦕',col:'#ffd93d',eye:{cx:108,cy:40,r:10},zones:[
+  zp('432,252 494,202 498,272 448,288','Tail'),
+  ze(278,262,157,97,'Body'),ze(278,292,90,54,'Belly'),
+  zp('143,197 175,187 158,58 126,66','Neck'),
+  ze(120,46,44,32,'Head'),
+  ze(183,330,28,54,'FL Leg'),ze(248,328,26,52,'FR Leg'),
+  ze(330,330,28,54,'BL Leg'),ze(396,328,26,52,'BR Leg')]},
+{id:'ptero',name:'Pterodactyl',ico:'🦅',col:'#ff88aa',eye:{cx:238,cy:154,r:9},zones:[
+  zp('250,182 58,102 28,164 200,234','Left Wing'),
+  zp('250,182 442,102 472,164 300,234','Right Wing'),
+  zp('250,202 82,152 250,232','Left Wing Inner'),
+  zp('250,202 418,152 250,232','Right Wing Inner'),
+  ze(250,232,66,58,'Body'),ze(250,252,38,32,'Belly'),
+  zp('224,188 266,188 272,222 220,222','Neck'),
+  ze(250,156,52,36,'Head'),
+  zp('213,160 186,165 213,170','Beak'),
+  zp('262,126 292,100 304,132','Crest'),
+  ze(224,298,18,36,'Left Leg'),ze(274,298,18,36,'Right Leg')]},
+];
+
+function mkEl(tag,a){
+  const el=document.createElementNS(NS,tag);
+  Object.entries(a).forEach(([k,v])=>el.setAttribute(k,v));
+  return el;
+}
+
+function renderDino(d){
+  const svg=document.getElementById('ds');svg.innerHTML='';
+  d.zones.forEach(zn=>{
+    const a={fill:zn.fill,stroke:'#111','stroke-width':zn.sw,'stroke-linejoin':'round','stroke-linecap':'round'};
+    if(zn.tag==='ellipse'){a.cx=zn.cx;a.cy=zn.cy;a.rx=zn.rx;a.ry=zn.ry;}
+    else a.points=zn.points;
+    const el=mkEl(zn.tag,a);
+    el.classList.add('zone');el.style.cursor='pointer';
+    svg.appendChild(el);
+  });
+  if(d.eye){
+    const{cx,cy,r}=d.eye;
+    const w=mkEl('circle',{cx,cy,r,fill:'white',stroke:'#111','stroke-width':2});svg.appendChild(w);
+    const p=mkEl('circle',{cx:cx+2,cy:cy+1,r:r*.55,fill:'#111'});svg.appendChild(p);
+    const s=mkEl('circle',{cx:cx+3,cy:cy-2,r:r*.22,fill:'white'});svg.appendChild(s);
+  }
+}
+
+function buildPicker(){
+  const g=document.getElementById('dgg');
+  DINOS.forEach(d=>{
+    const c=document.createElement('div');c.className='dc';
+    c.onclick=()=>start(d);
+    c.innerHTML=`<div class="dc-i">${d.ico}</div><div class="dc-n">${d.name}</div>`;
+    g.appendChild(c);
+  });
+}
+
+function buildPal(){
+  const p=document.getElementById('pal');
+  COLS.forEach((c,i)=>{
+    const s=document.createElement('div');s.className='sw'+(i===0?' on':'');s.style.background=c;
+    if(c==='#ffffff')s.style.border='3px solid #888';
+    s.onclick=()=>{pick=c;document.querySelectorAll('.sw').forEach(x=>x.classList.remove('on'));s.classList.add('on');};
+    s.title=c;p.appendChild(s);
+  });
+  const b=document.createElement('button');b.className='cbtn';
+  b.innerHTML='&#10006; Clear';
+  b.onclick=()=>document.querySelectorAll('#ds .zone').forEach(el=>el.setAttribute('fill','#f5f5f5'));
+  p.appendChild(b);
+}
+
+function start(d){
+  dino=d;
+  document.getElementById('ps').style.display='none';
+  const cs=document.getElementById('cs');cs.style.display='flex';
+  document.getElementById('nb').textContent=d.ico+' '+d.name;
+  renderDino(d);
+}
+
+function back(){
+  document.getElementById('cs').style.display='none';
+  document.getElementById('cel').style.display='none';
+  document.getElementById('ps').style.display='flex';
+  document.getElementById('cl').innerHTML='';
+  dino=null;
+}
+
+function showCel(){
+  document.getElementById('cel').style.display='flex';
+  document.getElementById('cm').textContent=MSGS[Math.floor(Math.random()*MSGS.length)];
+  if(dino)document.getElementById('ci').textContent=dino.ico;
+  doConfetti();playWin();
+}
+
+document.getElementById('ds').addEventListener('click',e=>{
+  let el=e.target;
+  if(!el.classList.contains('zone')){el=el.parentElement;}
+  if(!el||!el.classList.contains('zone'))return;
+  el.setAttribute('fill',pick);
+  el.style.filter='brightness(1.4)';
+  setTimeout(()=>el.style.filter='',200);
+  playPop();
+});
+
+let ac;
+function gc(){return ac||(ac=new(window.AudioContext||window.webkitAudioContext)());}
+function playPop(){try{const c=gc(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=[523,587,659,698,784,880][Math.floor(Math.random()*6)];o.type='sine';g.gain.setValueAtTime(.1,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.14);o.start();o.stop(c.currentTime+.14);}catch(e){}}
+function playWin(){try{const c=gc();[523,659,784,1047,1319].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;o.type='triangle';const t=c.currentTime+i*.18;g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.001,t+.35);o.start(t);o.stop(t+.35);});}catch(e){}}
+
+function doConfetti(){
+  const l=document.getElementById('cl');l.innerHTML='';
+  const cs=['#ffd93d','#ff6b6b','#4ecdc4','#88dd00','#ff44cc','#00aaff','#ff8800','#ffffff'];
+  for(let i=0;i<90;i++){
+    const p=document.createElement('div'),sz=7+Math.random()*14,dr=1.6+Math.random()*2,dl=Math.random()*1.4;
+    p.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;background:${cs[i%cs.length]};left:${Math.random()*100}%;top:-20px;border-radius:${Math.random()>.5?'50%':'3px'};animation:cf ${dr}s ease-in ${dl}s forwards;`;
+    l.appendChild(p);
+  }
+}
+
+buildPicker();buildPal();
+</script>
+</body>
+</html>
