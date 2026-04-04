@@ -769,5 +769,79 @@ function loop(){
 loop();
 </script>
 <a href="/" style="position:fixed;top:12px;left:12px;z-index:9999;background:rgba(0,0,0,0.7);color:#4ade80;text-decoration:none;padding:8px 16px;border-radius:20px;font-family:sans-serif;font-size:13px;font-weight:bold;border:1px solid rgba(74,222,128,0.3);backdrop-filter:blur(10px)">← Back to Games</a>
+<!-- Touch Controls for Tablet -->
+<div id="touch-controls" style="position:fixed;bottom:0;left:0;right:0;z-index:9999;display:none;padding:16px 20px;pointer-events:none;">
+  <div style="display:flex;justify-content:space-between;align-items:end;max-width:600px;margin:0 auto;">
+    <!-- D-pad left side -->
+    <div style="display:flex;gap:8px;pointer-events:auto;">
+      <button id="tc-left" style="width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.25);color:white;font-size:28px;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;touch-action:none;">←</button>
+      <button id="tc-right" style="width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.25);color:white;font-size:28px;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;touch-action:none;">→</button>
+    </div>
+    <!-- Jump button right side -->
+    <button id="tc-jump" style="width:90px;height:90px;border-radius:50%;background:rgba(74,222,128,0.2);border:3px solid rgba(74,222,128,0.5);color:#4ade80;font-size:14px;font-weight:bold;font-family:sans-serif;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;touch-action:none;">JUMP</button>
+  </div>
+</div>
+<script>
+(function(){
+  // Show touch controls on touch devices
+  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    document.getElementById('touch-controls').style.display = 'block';
+    // Hide the keyboard hint
+    var hint = document.getElementById('hint');
+    if (hint) hint.textContent = 'TAP BUTTONS TO MOVE & JUMP | STOMP SNAKES FROM ABOVE!';
+  }
+
+  // Simulate key presses
+  function simKey(key, down) {
+    var evt = new KeyboardEvent(down ? 'keydown' : 'keyup', { key: key, bubbles: true });
+    window.dispatchEvent(evt);
+    if (window.keys) window.keys[key] = down;
+  }
+
+  // Make keys global if not already
+  if (!window.keys) window.keys = {};
+
+  var btns = [
+    ['tc-left', 'ArrowLeft'],
+    ['tc-right', 'ArrowRight'],
+    ['tc-jump', ' '],
+  ];
+
+  btns.forEach(function(b) {
+    var el = document.getElementById(b[0]);
+    if (!el) return;
+    
+    el.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      simKey(b[1], true);
+      el.style.transform = 'scale(0.9)';
+      el.style.background = b[0] === 'tc-jump' ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.25)';
+    }, { passive: false });
+
+    el.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      simKey(b[1], false);
+      el.style.transform = 'scale(1)';
+      el.style.background = b[0] === 'tc-jump' ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.12)';
+    }, { passive: false });
+
+    // Also handle touchcancel
+    el.addEventListener('touchcancel', function() {
+      simKey(b[1], false);
+      el.style.transform = 'scale(1)';
+      el.style.background = b[0] === 'tc-jump' ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.12)';
+    });
+  });
+
+  // Tap canvas to start/restart (for menu/gameover)
+  var canvas = document.querySelector('canvas');
+  if (canvas) {
+    canvas.addEventListener('touchstart', function() {
+      simKey(' ', true);
+      setTimeout(function() { simKey(' ', false); }, 100);
+    });
+  }
+})();
+</script>
 </body>
 </html>
