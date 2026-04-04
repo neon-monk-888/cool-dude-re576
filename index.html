@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cool Dude RE576 🦕 Remi's Games</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦖</text></svg>">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bungee+Shade&family=Fredoka:wght@400;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --dino-green: #4ade80;
+      --lava-orange: #f97316;
+      --jungle-dark: #0f1a0f;
+      --volcano-red: #ef4444;
+      --sky-blue: #38bdf8;
+      --egg-yellow: #fbbf24;
+    }
+
+    body {
+      background: var(--jungle-dark);
+      color: white;
+      font-family: 'Fredoka', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    .bg-jungle {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: 
+        radial-gradient(ellipse at 20% 50%, rgba(74,222,128,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(56,189,248,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 90%, rgba(249,115,22,0.06) 0%, transparent 50%),
+        var(--jungle-dark);
+    }
+
+    /* Floating dinos */
+    .floating-dino {
+      position: fixed;
+      font-size: 40px;
+      opacity: 0.15;
+      animation: float 15s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .floating-dino:nth-child(2) { left: 80%; top: 20%; animation-delay: -3s; font-size: 50px; }
+    .floating-dino:nth-child(3) { left: 10%; top: 60%; animation-delay: -7s; font-size: 35px; }
+    .floating-dino:nth-child(4) { left: 60%; top: 70%; animation-delay: -11s; font-size: 45px; }
+    .floating-dino:nth-child(5) { left: 30%; top: 30%; animation-delay: -5s; font-size: 55px; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-20px) rotate(5deg); }
+      50% { transform: translateY(10px) rotate(-3deg); }
+      75% { transform: translateY(-15px) rotate(2deg); }
+    }
+
+    /* Header */
+    .header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 60px 20px 40px;
+    }
+
+    .logo-dino {
+      font-size: 80px;
+      animation: bounce 2s infinite;
+      display: inline-block;
+      cursor: pointer;
+      user-select: none;
+    }
+    .logo-dino:hover { animation: spin 0.5s ease; }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.3); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    .site-title {
+      font-family: 'Bungee Shade', cursive;
+      font-size: clamp(28px, 6vw, 56px);
+      background: linear-gradient(135deg, var(--dino-green), var(--sky-blue), var(--egg-yellow), var(--lava-orange));
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradient-shift 4s ease infinite;
+      margin: 10px 0;
+    }
+
+    @keyframes gradient-shift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .subtitle {
+      font-size: clamp(16px, 3vw, 24px);
+      color: var(--dino-green);
+      font-weight: 600;
+      margin-top: 5px;
+    }
+
+    .tagline {
+      color: rgba(255,255,255,0.4);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    /* Games grid */
+    .games-section {
+      position: relative;
+      z-index: 10;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .section-title {
+      font-family: 'Bungee Shade', cursive;
+      font-size: clamp(20px, 4vw, 32px);
+      text-align: center;
+      margin-bottom: 30px;
+      color: var(--egg-yellow);
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .game-card {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(74,222,128,0.2);
+      border-radius: 20px;
+      padding: 24px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .game-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: var(--dino-green);
+      box-shadow: 0 20px 60px rgba(74,222,128,0.15);
+      background: rgba(74,222,128,0.08);
+    }
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(74,222,128,0.1) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .game-card:hover::before { opacity: 1; }
+
+    .game-emoji {
+      font-size: 48px;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .game-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 6px;
+    }
+
+    .game-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.4;
+    }
+
+    .game-badge {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .badge-new { background: var(--volcano-red); color: white; }
+    .badge-fav { background: var(--egg-yellow); color: #1a1a1a; }
+    .badge-coming { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
+
+    /* Add game section */
+    .add-game {
+      border: 2px dashed rgba(255,255,255,0.15);
+      background: transparent;
+    }
+    .add-game:hover {
+      border-color: var(--sky-blue);
+      background: rgba(56,189,248,0.05);
+    }
+    .add-game .game-emoji { opacity: 0.3; }
+    .add-game .game-title { color: rgba(255,255,255,0.3); }
+
+    /* Footer */
+    .footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 60px 20px 30px;
+      color: rgba(255,255,255,0.2);
+      font-size: 12px;
+    }
+    .footer .dino-walk {
+      font-size: 24px;
+      display: inline-block;
+      animation: walk 3s steps(4) infinite;
+    }
+    @keyframes walk {
+      0% { transform: translateX(-100px); }
+      100% { transform: translateX(100px); }
+    }
+
+    /* Click counter */
+    .click-counter {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(74,222,128,0.3);
+      border-radius: 16px;
+      padding: 8px 16px;
+      font-size: 12px;
+      color: var(--dino-green);
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-jungle"></div>
+
+  <!-- Floating dinos -->
+  <div class="floating-dino" style="left:5%;top:10%">🦕</div>
+  <div class="floating-dino">🦖</div>
+  <div class="floating-dino">🦕</div>
+  <div class="floating-dino">🦴</div>
+  <div class="floating-dino">🌋</div>
+
+  <!-- Header -->
+  <header class="header">
+    <span class="logo-dino" onclick="roar()" id="mainDino">🦖</span>
+    <h1 class="site-title">COOL DUDE RE576</h1>
+    <p class="subtitle">🎮 Remi's Games 🎮</p>
+    <p class="tagline">Games made by kids, for kids 🦕</p>
+  </header>
+
+  <!-- Games -->
+  <section class="games-section">
+    <h2 class="section-title">🕹️ THE GAMES 🕹️</h2>
+
+    <div class="games-grid" id="gamesGrid">
+      <!-- Games will be added here -->
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span class="dino-walk">🦖</span>
+    <p style="margin-top:10px">Made with 🦕 by Remi & friends · 2026</p>
+    <p style="margin-top:4px">Powered by imagination & dinosaurs</p>
+  </footer>
+
+  <!-- Click counter -->
+  <div class="click-counter" id="clickCounter">🦖 Roars: 0</div>
+
+  <!-- Roar sound (Web Audio) -->
+  <script>
+    let roarCount = 0;
+    const dinos = ['🦖', '🦕', '🐊', '🦎', '🐉'];
+
+    function roar() {
+      roarCount++;
+      document.getElementById('clickCounter').textContent = `🦖 Roars: ${roarCount}`;
+      
+      // Shake the dino
+      const d = document.getElementById('mainDino');
+      d.style.animation = 'none';
+      d.offsetHeight; // reflow
+      d.style.animation = 'spin 0.5s ease';
+      
+      // Random dino swap
+      if (roarCount % 5 === 0) {
+        d.textContent = dinos[Math.floor(Math.random() * dinos.length)];
+      }
+
+      // Create floating emoji
+      const emoji = document.createElement('div');
+      emoji.textContent = '💥';
+      emoji.style.cssText = `
+        position:fixed; font-size:30px; z-index:999;
+        left:${Math.random()*80+10}%; top:${Math.random()*60+20}%;
+        pointer-events:none; animation: floatUp 1s forwards;
+      `;
+      document.body.appendChild(emoji);
+      setTimeout(() => emoji.remove(), 1000);
+    }
+
+    // Inject float-up animation
+    const style = document.createElement('style');
+    style.textContent = `@keyframes floatUp { 0%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:translateY(-80px) scale(2)} }`;
+    document.head.appendChild(style);
+
+    // Games data — add your Claude Code apps here!
+    const GAMES = [
+      {
+        emoji: '🦖',
+        title: 'Dino Runner',
+        desc: 'Jump over cacti and dodge pterodactyls!',
+        url: '#', // Replace with your Claude Code app URL
+        badge: 'fav',
+      },
+      {
+        emoji: '🧩',
+        title: 'Puzzle Rex',
+        desc: 'Solve dinosaur puzzles before the volcano erupts!',
+        url: '#',
+        badge: 'new',
+      },
+      {
+        emoji: '🎨',
+        title: 'Dino Painter',
+        desc: 'Draw and colour your own dinosaurs',
+        url: '#',
+        badge: 'new',
+      },
+      {
+        emoji: '🔢',
+        title: 'Math-a-saurus',
+        desc: 'Math challenges — get them right to hatch eggs!',
+        url: '#',
+        badge: 'coming',
+      },
+      {
+        emoji: '🏗️',
+        title: 'Dino Builder',
+        desc: 'Build your own Jurassic Park',
+        url: '#',
+        badge: 'coming',
+      },
+      // Add more games here!
+      {
+        emoji: '➕',
+        title: 'Add a Game',
+        desc: 'Build something cool and add it here!',
+        url: null,
+        isAdd: true,
+      },
+    ];
+
+    // Render games
+    const grid = document.getElementById('gamesGrid');
+    GAMES.forEach(game => {
+      const card = document.createElement('div');
+      card.className = `game-card ${game.isAdd ? 'add-game' : ''}`;
+      
+      const badgeHTML = game.badge === 'new' ? '<span class="game-badge badge-new">NEW!</span>'
+        : game.badge === 'fav' ? '<span class="game-badge badge-fav">⭐ FAVOURITE</span>'
+        : game.badge === 'coming' ? '<span class="game-badge badge-coming">COMING SOON</span>'
+        : '';
+
+      card.innerHTML = `
+        <span class="game-emoji">${game.emoji}</span>
+        <p class="game-title">${game.title}</p>
+        <p class="game-desc">${game.desc}</p>
+        ${badgeHTML}
+      `;
+
+      if (game.url && game.url !== '#') {
+        card.onclick = () => window.open(game.url, '_blank');
+      } else if (!game.isAdd) {
+        card.onclick = () => {
+          card.querySelector('.game-emoji').textContent = '🚧';
+          card.querySelector('.game-desc').textContent = 'Coming soon! Build it in Claude Code!';
+        };
+      }
+
+      grid.appendChild(card);
+    });
+  </script>
+</body>
+</html>
