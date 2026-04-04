@@ -87,7 +87,7 @@ body{font-family:'Comic Sans MS','Chalkboard SE',Trebuchet MS,cursive;background
 <!-- PICKER SCREEN -->
 <div id="ps">
   <div class="pg-title">🦕 DINO PAINTER! 🎨</div>
-  <div class="pg-sub">Pick a dinosaur to paint!</div>
+  <div class="pg-sub">🦕 Pick a dinosaur to paint!</div>
   <div class="dg-grid" id="dgg"></div>
 </div>
 
@@ -175,6 +175,51 @@ const DINOS=[
   zp('213,160 186,165 213,170','Beak'),
   zp('262,126 292,100 304,132','Crest'),
   ze(224,298,18,36,'Left Leg'),ze(274,298,18,36,'Right Leg')]},
+,{id:"tree",name:"Big Tree",ico:"🌳",col:"#22c55e",eye:null,zones:[
+  zp("230,380 270,380 260,200 240,200","Trunk"),
+  zp("200,380 230,380 225,340 205,360","Root Left"),
+  zp("270,380 300,380 295,360 275,340","Root Right"),
+  ze(250,180,90,70,"Leaves Top"),
+  ze(210,220,60,50,"Leaves Left"),
+  ze(290,220,60,50,"Leaves Right"),
+  ze(250,240,80,55,"Leaves Bottom"),
+  ze(230,200,15,12,"Apple 1"),
+  ze(278,210,12,10,"Apple 2")]},
+{id:"flower",name:"Sunflower",ico:"🌻",col:"#fbbf24",eye:null,zones:[
+  zp("245,380 255,380 255,200 245,200","Stem"),
+  zp("210,320 240,310 230,340","Leaf Left"),
+  zp("260,280 290,290 270,310","Leaf Right"),
+  ze(250,150,45,45,"Center"),
+  ze(250,100,22,22,"Petal Top"),
+  ze(295,130,22,22,"Petal Right"),
+  ze(285,170,22,22,"Petal BR"),
+  ze(215,170,22,22,"Petal BL"),
+  ze(205,130,22,22,"Petal Left"),
+  ze(220,105,22,22,"Petal TL"),
+  ze(280,105,22,22,"Petal TR")]},
+{id:"butterfly",name:"Butterfly",ico:"🦋",col:"#a78bfa",eye:{cx:250,cy:185,r:5},zones:[
+  zp("245,160 255,160 255,260 245,260","Body"),
+  ze(245,168,6,8,"Antenna L"),ze(255,168,6,8,"Antenna R"),
+  ze(190,200,55,45,"Left Wing Top"),
+  ze(200,245,40,30,"Left Wing Bottom"),
+  ze(310,200,55,45,"Right Wing Top"),
+  ze(300,245,40,30,"Right Wing Bottom"),
+  ze(195,200,20,16,"Left Spot"),
+  ze(305,200,20,16,"Right Spot")]},
+{id:"rainbow",name:"Rainbow",ico:"🌈",col:"#ef4444",eye:null,zones:[
+  zp("50,300 100,160 150,100 250,60 350,100 400,160 450,300 420,300 380,180 330,120 250,90 170,120 120,180 80,300","Red Band"),
+  zp("80,300 120,180 170,120 250,90 330,120 380,180 420,300 400,300 365,195 320,140 250,110 180,140 135,195 100,300","Orange Band"),
+  zp("100,300 135,195 180,140 250,110 320,140 365,195 400,300 380,300 350,210 310,160 250,130 190,160 150,210 120,300","Yellow Band"),
+  zp("120,300 150,210 190,160 250,130 310,160 350,210 380,300 360,300 335,225 300,178 250,150 200,178 165,225 140,300","Green Band"),
+  zp("140,300 165,225 200,178 250,150 300,178 335,225 360,300 340,300 320,238 290,195 250,170 210,195 180,238 160,300","Blue Band")]},
+{id:"dhouse",name:"Dino House",ico:"🏠",col:"#f97316",eye:null,zones:[
+  zp("100,220 250,100 400,220","Roof"),
+  zp("130,220 370,220 370,380 130,380","Wall"),
+  zp("215,280 285,280 285,380 215,380","Door"),
+  ze(170,260,40,35,"Window Left"),
+  ze(330,260,40,35,"Window Right"),
+  ze(250,150,20,15,"Chimney")]}
+
 ];
 
 function mkEl(tag,a){
