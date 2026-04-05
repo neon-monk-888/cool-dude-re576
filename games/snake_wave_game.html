@@ -769,80 +769,87 @@ function loop(){
 loop();
 </script>
 <a href="/" style="position:fixed;top:12px;left:12px;z-index:9999;background:rgba(0,0,0,0.7);color:#4ade80;text-decoration:none;padding:8px 16px;border-radius:20px;font-family:sans-serif;font-size:13px;font-weight:bold;border:1px solid rgba(74,222,128,0.3);backdrop-filter:blur(10px)">← Back to Games</a>
-<!-- Touch Controls for Tablet -->
-<div id="touch-controls" style="position:fixed;bottom:0;left:0;right:0;z-index:9999;display:none;padding:16px 20px;pointer-events:none;">
-  <div style="display:flex;justify-content:space-between;align-items:end;max-width:600px;margin:0 auto;">
-    <!-- D-pad left side -->
-    <div style="display:flex;gap:8px;pointer-events:auto;">
-      <button id="tc-left" style="width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.25);color:white;font-size:28px;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;touch-action:none;">←</button>
-      <button id="tc-right" style="width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.25);color:white;font-size:28px;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;touch-action:none;">→</button>
+
+<!-- Mobile Touch Controls — iOS/Android/Web compatible -->
+<div id="mpad" style="position:fixed;bottom:0;left:0;right:0;z-index:99999;display:none;padding:12px 16px 20px;background:linear-gradient(transparent,rgba(0,0,0,0.4));">
+  <div style="display:flex;justify-content:space-between;align-items:end;max-width:500px;margin:0 auto;">
+    <div style="display:flex;gap:10px;">
+      <div id="ml" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:32px;color:white;user-select:none;-webkit-user-select:none;touch-action:manipulation;">◀</div>
+      <div id="mr" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:32px;color:white;user-select:none;-webkit-user-select:none;touch-action:manipulation;">▶</div>
     </div>
-    <!-- Jump button right side -->
-    <button id="tc-jump" style="width:90px;height:90px;border-radius:50%;background:rgba(74,222,128,0.2);border:3px solid rgba(74,222,128,0.5);color:#4ade80;font-size:14px;font-weight:bold;font-family:sans-serif;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;touch-action:none;">JUMP</button>
+    <div id="mj" style="width:92px;height:92px;border-radius:50%;background:rgba(74,222,128,0.25);border:3px solid rgba(74,222,128,0.6);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#4ade80;font-family:sans-serif;user-select:none;-webkit-user-select:none;touch-action:manipulation;">JUMP</div>
   </div>
 </div>
 <script>
+// Mobile controls — directly sets game keys object. Works on iOS Safari, Android Chrome, all browsers.
 (function(){
-  // Show touch controls on touch devices
-  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-    document.getElementById('touch-controls').style.display = 'block';
-    // Hide the keyboard hint
-    var hint = document.getElementById('hint');
-    if (hint) hint.textContent = 'TAP BUTTONS TO MOVE & JUMP | STOMP SNAKES FROM ABOVE!';
+  var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  if (!isTouchDevice) return;
+
+  // Show mobile pad
+  var pad = document.getElementById('mpad');
+  if (pad) pad.style.display = 'block';
+
+  // Update hint text
+  var hint = document.getElementById('hint');
+  if (hint) hint.textContent = 'USE BUTTONS BELOW TO PLAY!';
+
+  // Resize canvas to leave room for controls
+  var cvs = document.querySelector('canvas');
+  if (cvs && window.innerHeight < 700) {
+    cvs.style.maxHeight = (window.innerHeight - 140) + 'px';
+    cvs.style.width = 'auto';
   }
 
-  // Direct key state manipulation — bypasses KeyboardEvent which fails on some mobile browsers
-  function simKey(key, down) {
-    // Set directly on the game's keys object (now global)
-    if (window.keys) window.keys[key] = down;
-    // Also dispatch event for menu/gameover handlers
-    try {
-      var evt = new KeyboardEvent(down ? 'keydown' : 'keyup', { key: key, bubbles: true, cancelable: true });
-      window.dispatchEvent(evt);
-    } catch(e) {}
-  }
-
-  var btns = [
-    ['tc-left', 'ArrowLeft'],
-    ['tc-right', 'ArrowRight'],
-    ['tc-jump', ' '],
-  ];
-
-  btns.forEach(function(b) {
-    var el = document.getElementById(b[0]);
+  function bind(id, keyName) {
+    var el = document.getElementById(id);
     if (!el) return;
-    
-    el.addEventListener('touchstart', function(e) {
+
+    function down(e) {
       e.preventDefault();
-      simKey(b[1], true);
-      el.style.transform = 'scale(0.9)';
-      el.style.background = b[0] === 'tc-jump' ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.25)';
-    }, { passive: false });
-
-    el.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      simKey(b[1], false);
-      el.style.transform = 'scale(1)';
-      el.style.background = b[0] === 'tc-jump' ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.12)';
-    }, { passive: false });
-
-    // Also handle touchcancel
-    el.addEventListener('touchcancel', function() {
-      simKey(b[1], false);
-      el.style.transform = 'scale(1)';
-      el.style.background = b[0] === 'tc-jump' ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.12)';
-    });
-  });
-
-  // Tap anywhere to start/restart (for menu/gameover)  
-  document.addEventListener('touchstart', function(e) {
-    // Only trigger start/restart if not pressing a control button
-    if (e.target.id && e.target.id.startsWith('tc-')) return;
-    if (typeof gs !== 'undefined' && (gs === 'menu' || gs === 'waveClear' || gs === 'gameOver')) {
-      simKey(' ', true);
-      setTimeout(function() { simKey(' ', false); }, 100);
+      e.stopPropagation();
+      window.keys[keyName] = true;
+      el.style.opacity = '1';
+      el.style.transform = 'scale(0.92)';
     }
-  }, { passive: true });
+    function up(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      window.keys[keyName] = false;
+      el.style.opacity = '0.85';
+      el.style.transform = 'scale(1)';
+    }
+
+    el.addEventListener('touchstart', down, {passive: false});
+    el.addEventListener('touchend', up, {passive: false});
+    el.addEventListener('touchcancel', up, {passive: false});
+    // Also mouse for testing on desktop
+    el.addEventListener('mousedown', down);
+    el.addEventListener('mouseup', up);
+    el.addEventListener('mouseleave', up);
+  }
+
+  bind('ml', 'ArrowLeft');
+  bind('mr', 'ArrowRight');
+  bind('mj', ' ');
+
+  // Tap screen to start/restart game
+  document.addEventListener('touchend', function(e) {
+    var t = e.target;
+    if (t.id === 'ml' || t.id === 'mr' || t.id === 'mj') return;
+    // Trigger space press for menu/waveclear/gameover
+    if (typeof gs !== 'undefined' && (gs === 'menu' || gs === 'waveClear' || gs === 'gameOver')) {
+      window.keys[' '] = true;
+      setTimeout(function() { window.keys[' '] = false; }, 150);
+      // Also call functions directly as backup
+      try {
+        if (gs === 'menu') startGame();
+        if (gs === 'waveClear') nextWave();
+        if (gs === 'gameOver') { wave = 0; score = 0; startGame(); }
+      } catch(err) {}
+    }
+  }, {passive: true});
+
 })();
 </script>
 </body>
