@@ -833,21 +833,30 @@ loop();
   bind('mr', 'ArrowRight');
   bind('mj', ' ');
 
-  // Tap screen to start/restart game
-  document.addEventListener('touchend', function(e) {
+  // Tap ANYWHERE on screen = jump (except arrow buttons)
+  document.addEventListener('touchstart', function(e) {
     var t = e.target;
-    if (t.id === 'ml' || t.id === 'mr' || t.id === 'mj') return;
-    // Trigger space press for menu/waveclear/gameover
+    if (t.id === 'ml' || t.id === 'mr') return; // arrows handle themselves
+
+    // During gameplay: tap = jump
+    if (typeof gs !== 'undefined' && gs === 'play') {
+      window.keys[' '] = true;
+    }
+    // Menu/waveclear/gameover: tap = start/next/restart
     if (typeof gs !== 'undefined' && (gs === 'menu' || gs === 'waveClear' || gs === 'gameOver')) {
       window.keys[' '] = true;
-      setTimeout(function() { window.keys[' '] = false; }, 150);
-      // Also call functions directly as backup
       try {
         if (gs === 'menu') startGame();
         if (gs === 'waveClear') nextWave();
         if (gs === 'gameOver') { wave = 0; score = 0; startGame(); }
       } catch(err) {}
     }
+  }, {passive: true});
+
+  document.addEventListener('touchend', function(e) {
+    var t = e.target;
+    if (t.id === 'ml' || t.id === 'mr') return;
+    window.keys[' '] = false;
   }, {passive: true});
 
 })();
